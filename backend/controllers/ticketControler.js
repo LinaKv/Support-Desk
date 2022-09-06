@@ -9,13 +9,6 @@ const { model } = require("mongoose");
 //@access Private
 const getTicket = asyncHandler(async (req, res) => {
   //   get user using the id
-  const user = await User.findById(req.user.id);
-
-  if (!user) {
-    res.status(401);
-    throw new Error("User don`t found");
-  }
-
   const ticket = await Ticket.findById(req.params.id);
 
   if (!ticket) {
@@ -24,8 +17,8 @@ const getTicket = asyncHandler(async (req, res) => {
   }
 
   if (ticket.user.toString() !== req.user.id) {
-    res.status(404);
-    throw new Error("Not Auth");
+    res.status(401);
+    throw new Error("Not Authorized");
   }
 
   res.status(200).json(ticket);
@@ -52,8 +45,25 @@ const getTickets = asyncHandler(async (req, res) => {
 //@desc  Create user ticket
 //@route POST /api/tickets
 //@access Private
+
 const createTicket = asyncHandler(async (req, res) => {
-  res.status(200).json({ message: "getTickets" });
+  const { product, description } = req.body;
+
+  if (!product || !description) {
+    res.status(400);
+    throw new Error("Please add a product and description");
+  }
+  console.log("work");
+
+  const ticket = await Ticket.create({
+    product,
+    description,
+    user: req.user.id,
+    status: "new",
+  });
+
+  res.status(201).json(ticket);
+  // res.status(200).json({ message: "getTickets" });
 });
 
 //@desc  delete user ticket
